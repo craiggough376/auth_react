@@ -93,7 +93,7 @@ Axios is a promise based HTTP request library which allows us to interface with 
 We will now use axios to send the data to the backend. Post requires the URL as the first parameter and data to be passed as the second.
 
 ```js
-axios.post("http://localhost:3000/signup", newUser);
+axios.post("http://localhost:5000/signup", newUser);
 ```
 
 Lets check if the data is sent to the backend.
@@ -166,12 +166,12 @@ const User = require("./models/User");
 ```
 
 ```js
-app.post('/signup', (req,res) =>{
+app.post("/signup", (req, res) => {
   let newUser = new User({
-    email: req.body.email
-    name: req.body.name
-  })
-})
+    email: req.body.email,
+    name: req.body.name,
+  });
+});
 ```
 
 We will decrypt our password by using bcrypt.
@@ -574,7 +574,7 @@ return res.status(200).json({
 Create a global variable above the function
 
 ```js
-const secrettoken = "hfdsahgjkhfvsdaljgdisajg23452asgasg";
+const secretKey = "hfdsahgjkhfvsdaljgdisajg23452asgasg";
 ```
 
 Now lets go back to the frontend and log out our response and it should give us a token.
