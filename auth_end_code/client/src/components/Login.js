@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+
 const Login = () => {
   const [user, setUser] = useState({
     email: "",
@@ -14,7 +15,7 @@ const Login = () => {
         if (res.status === 200) {
           console.log(res);
           localStorage.setItem("token", res.data.token);
-          return <Redirect push to="/" />;
+          window.location = "/";
         }
       },
       (err) => {

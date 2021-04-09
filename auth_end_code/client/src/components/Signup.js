@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Redirect } from "react-router-dom";
 const SignUp = () => {
   const [newUser, setNewUser] = useState({
     name: "",
@@ -21,7 +20,7 @@ const SignUp = () => {
     axios.post("http://localhost:5000/signup", newUser).then(
       (res) => {
         console.log(res);
-        return <Redirect push to="/login" />;
+        window.location = "/login";
       },
       (err) => {
         console.log(err.response);
