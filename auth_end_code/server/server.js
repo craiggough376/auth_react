@@ -66,6 +66,29 @@ app.post("/login", (req, res) => {
   });
 });
 
+app.get("/user", (req, res) => {
+  let token = req.headers.token;
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({
+        title: "unauthorised",
+      });
+    }
+    User.findOne({ _id: decoded.userId }, (err, user) => {
+      if (err) {
+        return console.log(err);
+      }
+      return res.status(200).json({
+        title: "user grabbed",
+        user: {
+          email: user.email,
+          name: user.name,
+        },
+      });
+    });
+  });
+});
+
 app.listen(port, (err) => {
   if (err) return console.log(err);
   console.log("server running at port " + port);
