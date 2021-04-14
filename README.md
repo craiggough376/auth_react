@@ -15,33 +15,33 @@ We are going to make a basic application with authenication functionality using 
 ```bash
 // terminal server directory
 npm install
-npm server:dev
+npm run server:dev
 ```
 
 ```bash
 // terminal client directory
 npm install
-npm run serve
+npm start
 ```
 
-Visit `localhost:3000` and you should see "hello world".
+Visit `localhost:5000` and you should see "hello world".
 
-Visit `localhost:8080` and you should see "Home".
+Visit `localhost:3000` and you should see "Home".
 
 ## Signup
 
 > Give 5 mins to look over the code.
 
-You'll notice we have a very basic sign up form with data that captures the name, email address and password of the new user. The current sign up button doesn't perform anything just yet aside from logging 'click' to the console.
+You'll notice in the front end, we have a very basic application implementing React router with 3 routes. The Home page ("/"), login page("/login") and signup page ("/signup"). Signup page has a form ready for use to use but isnt being posted anywhere. When we click signup we should see only 'click' console logged in the browser dev tools.
 
 We have a client and server folder. Let's start by connecting the two.
 
-First we want to include our body parser into our server.js
+First we want the body of our requests parsed by our server.js. BodyParser
 
 ```js
 // server.js
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 ```
 
 Returns middleware that only parses urlencoded bodies and only looks at requests where the Content-Type header matches the type option. This parser accepts only UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
@@ -61,20 +61,6 @@ And we can include it in our signup.vue
 ```js
 // signup.vue
 import axios from "axios";
-```
-
-And modify the method to create a new user
-
-```js
-methods: {
-    signup: function(){
-      let newUser = {
-        name: this.name,
-        email: this.email,
-        password: this.password
-      }
-    }
-  }
 ```
 
 ## Axios
@@ -216,7 +202,7 @@ app.post('/signup', (req,res) =>{
     name: req.body.name,
     password: bcrypt.hashSync(req.body.password, 10)
   })
-  newUser.save(err => { <!--modified-->
+  newUser.save((err) => { <!--modified-->
 	  if(err){
 	    return res.status(400).json({
 	      title:'error',
@@ -266,104 +252,50 @@ Lets test this out by adding a new user and you should receive some feedback fro
 
 ## Login
 
-In client directory
-
-```bash
-npm install vue-router
-```
-
-```bash
-touch src/router.js
-```
-
-```js
-// router.js
-import Vue from "vue";
-import Router from "vue-router";
-import Home from "./components/home";
-import Login from "./components/login";
-import Signup from "./components/signup";
-
-Vue.use(Router);
-
-export default new Router({
-  mode: "history",
-  routes: [
-    {
-      path: "/",
-      name: "home",
-      component: Home,
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: Login,
-    },
-    {
-      path: "/signup",
-      name: "signup",
-      component: Signup,
-    },
-  ],
-});
-```
-
-```js
-// main.js
-import Vue from 'vue';
-import App from './App.vue';
-import router from './router'; <!--added-->
-
-Vue.config.productionTip = false
-
-new Vue({
-  router, <!--added-->
-  render: h => h(App),
-}).$mount('#app')
-
-```
-
-And change our app.js
-
-```js
-// app.js
-<template>
-  <div id="app">
-    <router-view/>		<!--modified-->
-  </div>
-</template>
-```
-
 Lets set up our login page.
 
-```vue
-// login.vue
-<template lang="html">
-  <div>
-    Email: <input type="text" v-model="email" /> Password:
-    <input type="text" v-model="password" />
-    <button>Login</button>
-  </div>
-</template>
+```js
+// login.js
+import React, { useState } from "react"; //added
+const Login = () => {
+  //added
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
 
-<script>
-export default {
-  name: "login",
-  data() {
-    return {
-      email: "",
-      password: "",
-    };
-  },
+  //added
+  const handleChange = (event) => {
+    const copiedUser = { ...user };
+    const propertyName = event.target.name;
+    copiedUser[propertyName] = event.target.value;
+    setUser(copiedUser);
+  };
+
+  return (
+    <>
+      <h1>Login Page</h1>
+      <form>
+        Email:
+        <input
+          type="text"
+          value={user.name}
+          name="email"
+          onChange={handleChange}
+        />
+        Password:
+        <input
+          type="password"
+          value={user.password}
+          name="password"
+          onChange={handleChange}
+        />
+        <input type="submit" value="Login" />
+      </form>
+    </>
+  );
 };
-</script>
-
-<style lang="css" scoped>
-input {
-  display: block;
-  margin: auto;
-}
-</style>
+export default Login;
 ```
 
 We would like to connect to the backend. For which we will use axios.
@@ -375,24 +307,16 @@ import axios from "axios";
 
 Lets make the click button call a function
 
-```
-<button @click="login">Login </button> <!--modified-->
+```js
+      <form onSubmit={login}> <!--modified-->
 ```
 
 ```js
-// login.vue
-methods:{
-    login: function(){
-      let user = {
-        email: this.email,
-        password: this.password
-      }
-      axios.post('http://localhost:3000/login', user)
-        .then(res => {
-          console.log(res);
-        })
-    }
-  }
+// login.js
+const login = (event) => {
+  event.preventDefault();
+  axios.post("http://localhost:5000/login", user);
+};
 ```
 
 We will send it to the backend and check that we are receiving the data.
@@ -452,105 +376,142 @@ We could also add some visual feedback to incorporate the error messages we have
 > show the error when trying to sign up for same email address and route that it takes to get to error message. Should be err.response.data.title
 
 ```js
-// signup.vue
-<template lang="html">
-  <div>
-    <h1>Signup</h1>
-    Name: <input type="text" v-model="name" />
-    Email: <input type="text" v-model="email" />
-    Password: <input type="password" v-model="password" />
-    <button @click="signup">Sign up</button>
-    {{ error }} <!--added-->
-  </div>
-</template>
+// signup.js
+import React, { useState } from "react";
+import axios from "axios";
+const SignUp = () => {
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState(""); //added
 
-<script>
-import axios from 'axios'
-export default {
-  name: 'signup',
-  data(){
-    return{
-      name:'',
-      email:'',
-      password:'',
-      error:'' <!--added-->
-    }
-  },
-  methods: {
-    signup: function(){
-      let newUser = {
-        name: this.name,
-        email: this.email,
-        password: this.password
+  const handleChange = (event) => {
+    const propertyName = event.target.name;
+    const newUserCopy = { ...newUser };
+    newUserCopy[propertyName] = event.target.value;
+    setNewUser(newUserCopy);
+  };
+
+  const signUp = (event) => {
+    event.preventDefault();
+    axios.post("http://localhost:5000/signup", newUser).then(
+      (res) => {
+        console.log(res);
+        window.location = "/login"; //added
+      },
+      (err) => {
+        console.log(err.response);
+        setError(err.response.data.error); //added
       }
-      axios.post('http://localhost:3000/signup', newUser)
-        .then(res => {
-          console.log(res);
-          this.error = '' <!--added-->
-        }, err => {
-          console.log(err.response);
-          this.error = err.response.data.error <!--added-->
-        })
-    }
-  }
-}
-</script>
+    );
+  };
+
+  return (
+    <>
+      <h1>Signup page</h1>
+      <form onSubmit={signUp}>
+        Name:{" "}
+        <input
+          type="text"
+          name="name"
+          value={newUser.name}
+          onChange={handleChange}
+        />
+        Email: <input
+          type="text"
+          name="email"
+          value={newUser.email}
+          onChange={handleChange}
+        />
+        Password:{" "}
+        <input
+          type="password"
+          value={newUser.password}
+          name="password"
+          onChange={handleChange}
+        />
+        <input type="submit" value="Sign Up" />
+      </form>
+      <p>{error}</p> //added
+    </>
+  );
+};
+export default SignUp;
 ```
 
 We can also push this user towards the login page as we know they have signed up successfully.
 
 ```js
+//signup.js
 axios.post('http://localhost:3000/signup', newUser)
         .then(res => {
           console.log(res);
-          this.$router.push('/login') <!--added-->
+          window.location = '/login' <!--added-->
 ```
 
 If we check with our mongodb compass we should have a new user.
 
 Lets now give some feedback to the login for wrong password.
 
-```vue
+```js
 // login.vue
-<template lang="html">
-  <div>
-    Email: <input type="text" v-model="email" /> Password:
-    <input type="password" v-model="password" />
-    <button @click="login">Login</button>
-    {{ error }}
-    <!--added-->
-  </div>
-</template>
+import React, { useState } from "react";
+import axios from "axios";
+const Login = () => {
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState(""); //added
 
-<script>
-import axios from 'axios';
-
-export default {
-  name:'login',
-  data(){
-    return{
-      email:'',
-      password:'',
-      error: '' 			<!--added-->
-    }
-  },
-  methods:{
-    login: function(){
-      let user = {
-        email: this.email,
-        password: this.password
+  const login = (event) => {
+    event.preventDefault();
+    axios.post("http://localhost:5000/login", user).then(
+      //added
+      (res) => {
+        console.log(res);
+      },
+      (err) => {
+        console.log(err.response);
+        setError(err.response.data.error);
       }
-      axios.post('http://localhost:3000/login', user)
-        .then(res => {
-          console.log(res);
-        }, err => { 					<!--added-->
-          console.log(err.response);		<!--added-->
-          this.error = err.response.data.error <!--added-->
-        })
-    }
-  }
-}
-</script>
+    );
+  };
+
+  const handleChange = (event) => {
+    const copiedUser = { ...user };
+    const propertyName = event.target.name;
+    copiedUser[propertyName] = event.target.value;
+    setUser(copiedUser);
+  };
+
+  return (
+    <>
+      <h1>Login Page</h1>
+      <form onSubmit={login}>
+        Email:
+        <input
+          type="text"
+          value={user.name}
+          name="email"
+          onChange={handleChange}
+        />
+        Password:
+        <input
+          type="password"
+          value={user.password}
+          name="password"
+          onChange={handleChange}
+        />
+        <input type="submit" value="Login" />
+      </form>
+      <p>{error}</p> //added
+    </>
+  );
+};
+export default Login;
 ```
 
 Now lets go back to the backend and if successful send a token to the frontend.
@@ -564,7 +525,7 @@ In order to generate a web token we use the function .sign(). In the first param
 
 ```js
 // server.js
-let token = jwt.sign({ userId: user._id }, secretkey);
+let token = jwt.sign({ userId: user._id }, secretKey);
 return res.status(200).json({
   title: "login successful",
   token: token,
@@ -607,54 +568,53 @@ axios.post('http://localhost:3000/login', user)
         .then(res => {
           if (res.status === 200){
           localStorage.setItem('token', res.data.token) <!--modified-->
-          this.$router.push('/')
+          window.location = "/"
           }
 ```
 
 This will redirect us to the loading page. Which we will add in some conditional logic to check if the user has been authorised (includes a token in local storage).
 
-```vue
-// home.vue
-<script>
-export default {
-  name:'home',
-  created(){ 			<!--added -->
-    if(localStorage.getItem('token') === null){
-      this.$router.push('/login')
-    }
+```js
+// home.js
+import React from "react";
+import { Redirect } from "react-router-dom"; //added
+const Home = () => {
+  //added
+  if (localStorage.getItem("token") === null) {
+    return <Redirect to="/login" />;
   }
-}
-</script>
+  return (
+    <>
+      <p>Home Page</p>
+    </>
+  );
+};
+export default Home;
 ```
 
 Now let us add a logout button to the home page. All we need to do is clear our localStorage.
 
-```vue
-// home.vue
-<template lang="html">
-  <div>
-    Home
-    <button @click="logout">Logout</button>
-    <!--added-->
-  </div>
-</template>
-
-<script>
-export default {
-  name:'home',
-  created(){
-    if(localStorage.getItem('token') === null){
-      this.$router.push('/login')
-    }
-  },
-  methods:{	<!--added-->
-    logout: function(){
-      localStorage.clear();
-      this.$router.push('/login')
-    }
+```js
+// home.js
+import React from "react";
+import { Redirect } from "react-router-dom";
+const Home = () => {
+  if (localStorage.getItem("token") === null) {
+    return <Redirect to="/login" />;
   }
-}
-</script>
+
+  const logout = () => {
+    localStorage.clear();
+    window.location = "/login";
+  };
+  return (
+    <>
+      <p>Home Page</p>
+      <button onClick={logout}>Logout</button>
+    </>
+  );
+};
+export default Home;
 ```
 
 ## User Details
@@ -663,15 +623,32 @@ Since we know the user is logged in we can personallise the page using the detai
 
 ```js
 // home.vue
-mounted(){
-    axios.get('http://localhost:3000/user', {
-      headers: {
-        token: localStorage.getItem('token')
-      }
-    }).then(res => {
-      console.log(res);
-    })
-  },
+import React, { useEffect } from "react"; //added
+import { Redirect } from "react-router-dom";
+import axios from "axios"; //added
+
+const Home = () => {
+  if (localStorage.getItem("token") === null) {
+    return <Redirect to="/login" />;
+  }
+
+//added
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user", {
+        headers: {
+          token: localStorage.getItem("token"),
+        },
+      })
+      .then(
+        (res) => {
+          console.log(res)
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+  }, []);
 ```
 
 This will flag up a 404 as we have yet to create this route. Lets do this now in the backend.
@@ -682,7 +659,7 @@ We will use jwt.verify() which takes two parameters, first is a token, second is
 // server.js
 app.get("/user", (req, res) => {
   let token = req.headers.token;
-  jwt.verify(token, secretkey, (err, decoded) => {
+  jwt.verify(token, secretKey, (err, decoded) => {
     if (err)
       return res.status(401).json({
         title: "unauthorised",
@@ -737,55 +714,52 @@ app.get('/user', (req, res) => {
 
 This should now pop up on our console and we can then use that data to display to the user.
 
-```vue
-// home.vue
-<template lang="html">
-  <div>
-    <h2>Home</h2>
-    <p>Hello {{ name }}</p>
-    <!--added-->
+```js
+// home.js
+import React, { useState, useEffect } from "react"; //added
+import { Redirect } from "react-router-dom";
+import axios from "axios";
+const Home = () => {
+  //added
+  const [user, setUser] = useState({
+    name: "",
+  });
 
-    <button @click="logout">Logout</button>
-  </div>
-</template>
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/user", {
+        headers: {
+          token: localStorage.getItem("token"),
+        },
+      })
+      .then(
+        (res) => {
+          console.log(res);
+          setUser(res.data.user); //added
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+  }, []);
 
-<script>
-import axios from 'axios'
-
-export default {
-  name:'home',
-  data(){		<!--added-->
-    return{
-      name:'',
-      email:''
-    }
-  },
-  created(){
-    if(localStorage.getItem('token') === null){
-      this.$router.push('/login')
-    }
-  },
-  mounted(){
-    axios.get('http://localhost:3000/user', {
-      headers: {
-        token: localStorage.getItem('token')
-      }
-    }).then(res => {			<!--modified-->
-      // console.log(res);
-      this.name = res.data.user.name
-      this.email = res.data.user.email
-    })
-  },
-  methods:{
-    logout: function(){
-      localStorage.clear();
-      this.$router.push('/login')
-    }
+  if (localStorage.getItem("token") === null) {
+    return <Redirect to="/login" />;
   }
-}
-</script>
 
-<style lang="css" scoped></style>
+  const logout = () => {
+    localStorage.clear();
+    window.location = "/login";
+  };
+  return (
+    <>
+      <p>Home Page</p>
+      <p>Hello {user.name}</p> //added
+      <button onClick={logout}>Logout</button>
+    </>
+  );
+};
+export default Home;
 ```
 
 ### Summary

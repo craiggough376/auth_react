@@ -13,9 +13,14 @@ const Home = () => {
             token: localStorage.getItem("token"),
           },
         })
-        .then((res) => {
-          setUser(res.data.user);
-        });
+        .then(
+          (res) => {
+            setUser(res.data.user);
+          },
+          (err) => {
+            console.log(err);
+          }
+        );
     }
   }, []);
   if (localStorage.getItem("token") === null) {
