@@ -36,7 +36,7 @@ You'll notice in the front end, we have a very basic application implementing Re
 
 We have a client and server folder. Let's start by connecting the two.
 
-First we want the body of our requests parsed by our server.js. BodyParser
+First we want the body of our requests parsed by our server.js.
 
 ```js
 // server.js
