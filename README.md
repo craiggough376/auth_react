@@ -56,10 +56,10 @@ Next we will go back to the frontend and install Axios to call and send data bac
 
 `npm install axios`
 
-And we can include it in our signup.vue
+And we can include it in our signup.js
 
 ```js
-// signup.vue
+// signup.js
 import axios from "axios";
 ```
 
@@ -239,7 +239,7 @@ When we try to add multiple names with the same email we should get an error in 
 In order to get some feedback from when we add the user.
 
 ```js
-// signup.vue
+// signup.js
 axios.post('http://localhost:3000/signup', newUser)
         .then(res => { 			<!--added-->
           console.log(res);
@@ -301,7 +301,7 @@ export default Login;
 We would like to connect to the backend. For which we will use axios.
 
 ```js
-// login.vue
+// login.js
 import axios from "axios";
 ```
 
@@ -371,7 +371,7 @@ And then only if everything is all good, we will use json web token to verify th
 
 ` npm install jsonwebtoken`
 
-We could also add some visual feedback to incorporate the error messages we have flagged up in our backend by adding them to our signup.vue
+We could also add some visual feedback to incorporate the error messages we have flagged up in our backend by adding them to our signup.js
 
 > show the error when trying to sign up for same email address and route that it takes to get to error message. Should be err.response.data.title
 
@@ -456,7 +456,7 @@ If we check with our mongodb compass we should have a new user.
 Lets now give some feedback to the login for wrong password.
 
 ```js
-// login.vue
+// login.js
 import React, { useState } from "react";
 import axios from "axios";
 const Login = () => {
@@ -541,7 +541,7 @@ const secretKey = "hfdsahgjkhfvsdaljgdisajg23452asgasg";
 Now lets go back to the frontend and log out our response and it should give us a token.
 
 ```js
-// login.vue
+// login.js
 axios.post('http://localhost:3000/login', user)
         .then(res => {
           if (res.status === 200){ <!--added-->
@@ -563,7 +563,7 @@ token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZDUyN2";
 Now that we have our token we will store it in our local storage and then push them to our home page.
 
 ```js
-//login.vue
+//login.js
 axios.post('http://localhost:3000/login', user)
         .then(res => {
           if (res.status === 200){
@@ -622,7 +622,7 @@ export default Home;
 Since we know the user is logged in we can personallise the page using the details acquired. We will send the token through the header.
 
 ```js
-// home.vue
+// home.js
 import React, { useEffect } from "react"; //added
 import { Redirect } from "react-router-dom";
 import axios from "axios"; //added
